@@ -145,7 +145,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
                 }
             }
-
         }
 
         static void MenuControleChamadas()
@@ -191,7 +190,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
                 }
             }
-
         }
 
         static void RegistrarChamado(int indice, Equipamento equipamento)
@@ -217,7 +215,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             Chamado novoChamado = new Chamado(titulo, descricao, equipamento, dataAbertura);
             chamados[indice] = novoChamado;
-
         }
 
         static void RegistrarEquipamentos(int indice)
@@ -229,6 +226,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             {
                 Console.WriteLine("O nome precisa ter 6 ou mais caracteres.");
                 RegistrarEquipamentos(indice);
+                return;
             }
 
             Console.Write("Preço de aquisição: R$");
@@ -245,7 +243,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             Equipamento novoEqp = new Equipamento(nomeEquip, numSerie, nomeFabricante, precoEquip, fabricacaoEquip);
             equipamentos[indice] = novoEqp;
-
         }
 
         static void VisualizarItens(object[] itens)
@@ -269,8 +266,20 @@ namespace GestaoDeEquipamentos.ConsoleApp
             Console.Write("\nDigite o número do equipamento para edita-lo: ");
             int eqpEdit = Convert.ToInt32(Console.ReadLine());
 
-            RegistrarEquipamentos(eqpEdit - 1);
+            if (equipamentos[eqpEdit-1] != null)
+            {
+                foreach (Chamado chamado in chamados)
+                {
+                    if (chamado != null && chamado.Equipamento == equipamentos[eqpEdit - 1])
+                    {
+                        Console.WriteLine("Você não pode editar um equipamento vinculado a um chamado.");
+                        Console.ReadKey();
+                        return;
+                    }
+                }
+            }
 
+            RegistrarEquipamentos(eqpEdit - 1);
         }
 
         static void EditarChamado()
