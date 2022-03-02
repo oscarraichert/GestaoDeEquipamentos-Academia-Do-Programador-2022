@@ -76,6 +76,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             while (opção != "3")
             {
+                Console.Clear();
                 Console.WriteLine("\nControle de equipamentos (1)" +
                                 "\nControle de chamadas de manutenção (2)" +
                                 "\nSair (3)");
@@ -96,6 +97,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
                     default:
                         Console.WriteLine("Opção inválida.");
+                        Console.ReadKey();
                         break;
                 }
             }
@@ -105,9 +107,9 @@ namespace GestaoDeEquipamentos.ConsoleApp
         {
             string opcao = null;
 
-
             while (opcao != "5")
             {
+                Console.Clear();
                 Console.WriteLine("\nRegistrar equipamento (1)" +
                                         "\nVisualizar os equipamentos (2)" +
                                         "\nEditar um equipamento (3)" +
@@ -123,6 +125,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
                     case "2":
                         VisualizarItens(equipamentos);
+                        Console.ReadKey();
                         break;
 
                     case "3":
@@ -138,9 +141,11 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
                     default:
                         Console.WriteLine("Opção inválida.");
+                        Console.ReadKey();
                         break;
                 }
             }
+
         }
 
         static void MenuControleChamadas()
@@ -149,6 +154,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             while (opcao != "5")
             {
+                Console.Clear();
                 Console.WriteLine("\nRegistrar chamado (1)" +
                     "\nVisualizar chamados registrados (2)" +
                     "\nEditar chamado (3)" +
@@ -165,6 +171,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
                     case "2":
                         VisualizarItens(chamados);
+                        Console.ReadKey();
                         break;
 
                     case "3":
@@ -178,10 +185,13 @@ namespace GestaoDeEquipamentos.ConsoleApp
                     case "5":
                         break;
 
-                    default: Console.WriteLine("Comando inválido.");
+                    default:
+                        Console.WriteLine("Comando inválido.");
+                        Console.ReadKey();
                         break;
                 }
             }
+
         }
 
         static void RegistrarChamado(int indice, Equipamento equipamento)
@@ -207,12 +217,19 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             Chamado novoChamado = new Chamado(titulo, descricao, equipamento, dataAbertura);
             chamados[indice] = novoChamado;
+
         }
 
         static void RegistrarEquipamentos(int indice)
         {
             Console.Write("\nNome do equipamento: ");
             string nomeEquip = Console.ReadLine();
+
+            if (nomeEquip.Length < 6)
+            {
+                Console.WriteLine("O nome precisa ter 6 ou mais caracteres.");
+                RegistrarEquipamentos(indice);
+            }
 
             Console.Write("Preço de aquisição: R$");
             string precoEquip = Console.ReadLine();
@@ -228,6 +245,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
             Equipamento novoEqp = new Equipamento(nomeEquip, numSerie, nomeFabricante, precoEquip, fabricacaoEquip);
             equipamentos[indice] = novoEqp;
+
         }
 
         static void VisualizarItens(object[] itens)
@@ -245,25 +263,48 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
         static void EditarEquipamento()
         {
+            Console.Clear();
+            VisualizarItens(equipamentos);
+
             Console.Write("\nDigite o número do equipamento para edita-lo: ");
             int eqpEdit = Convert.ToInt32(Console.ReadLine());
 
             RegistrarEquipamentos(eqpEdit - 1);
+
         }
 
         static void EditarChamado()
         {
+            Console.Clear();
+            VisualizarItens(chamados);
+
             Console.Write("\nDigite o número do chamado para edita-lo: ");
             int indiceChamado = Convert.ToInt32(Console.ReadLine());
-            var chamado = chamados[indiceChamado - 1];            
+            var chamado = chamados[indiceChamado - 1];
 
             RegistrarChamado(indiceChamado - 1, chamado.Equipamento);
+
         }
 
         static void ExcluirItens(object[] itens)
         {
+            VisualizarItens(itens);
+
             Console.Write("\nDigite o número do item para excluí-lo: ");
             int i = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            if (itens[i] is Equipamento)
+            {
+                foreach (Chamado cham in chamados)
+                {
+                    if (cham.Equipamento == itens[i])
+                    {
+                        Console.WriteLine("Você não pode excluir um equipamento vinculado a um chamado.");
+                        Console.ReadKey();
+                        return;
+                    }
+                }
+            }
 
             itens[i] = null;
         }
