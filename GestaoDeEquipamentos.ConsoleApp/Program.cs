@@ -249,7 +249,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         }
 
         static void VisualizarItens(object[] itens)
-        {
+        {            
             for (int i = 0; i < itens.Length; i++)
             {
                 object item = itens[i];
@@ -297,7 +297,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             {
                 foreach (Chamado cham in chamados)
                 {
-                    if (cham.Equipamento == itens[i])
+                    if (cham != null && cham.Equipamento == itens[i])
                     {
                         Console.WriteLine("Você não pode excluir um equipamento vinculado a um chamado.");
                         Console.ReadKey();
