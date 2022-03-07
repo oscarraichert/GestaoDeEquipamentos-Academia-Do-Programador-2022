@@ -78,6 +78,32 @@ namespace GestaoDeEquipamentos.ConsoleApp
         }
     }
 
+    public class Problema: IComparable<Problema>
+    {
+        public Equipamento Equipamento;
+        public int Problemas = 0;
+
+        public Problema(Equipamento equipamento)
+        {
+            Equipamento = equipamento;
+        }
+
+        public override string ToString()
+        {
+            return $"\nO equipamento {Equipamento} apresentou problemas {Problemas} vezes.";
+        }
+
+        public int CompareTo(Problema other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            return Problemas.CompareTo(other.Problemas);
+        }
+    }
+
     internal class Program
     {
         static int numeroEquipamentos = 0;
@@ -87,7 +113,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
         static Solicitante[] solicitantes = new Solicitante[1000];
         static Random random = new Random();
         static int numeroSolicitantes = 0;
-        static int defeitos = 0;
 
         static void Main(string[] args)
         {
@@ -225,7 +250,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
 
                     case "6":
-                        EquipamentosProblematicos(equipamentos, chamados);
+                        EquipamentosProblematicos();
                         Console.ReadKey();
                         break;
 
@@ -483,28 +508,33 @@ namespace GestaoDeEquipamentos.ConsoleApp
             chamados[i - 1] = new Chamado(chamado.Titulo, chamado.Descricao, chamado.Equipamento, chamado.DataAbertura, solicitantes[j - 1]);
         }
 
-        static void EquipamentosProblematicos(Equipamento[] eqps, Chamado[] cham)
+        static void EquipamentosProblematicos()
         {
-            int j = 0;
-            int eqpAtual = 0;
-            int problemas = 0;
-
-            for (j = 0; j < chamados.Length; j++)
+            int i = 0;            
+            Problema[] problemasEquipamentos = new Problema[equipamentos.Length];
+            
+            foreach (Equipamento eqp in equipamentos)
             {
-                if (equipamentos[eqpAtual].Nome == chamados[eqpAtual].Equipamento.Nome && chamados[j] != null)
+                if (eqp == null)
                 {
-                    problemas++;
+                    continue;
                 }
+                
+                Problema problema = new Problema(eqp);
+                foreach (Chamado chamado in chamados)
+                {
+                    if (chamado != null && eqp == chamado.Equipamento)
+                    {
+                        problema.Problemas++;
+                    }
+                }
+
+                problemasEquipamentos[i++] = problema;
             }
 
-            while (equipamentos[eqpAtual] != null && chamados[eqpAtual].Equipamento != null)
-            {
-                if (equipamentos[eqpAtual].Nome == chamados[eqpAtual].Equipamento.Nome)
-                {
-                    eqpAtual++;
-                    Console.Write($"\nO equipamento {equipamentos[eqpAtual - 1].Nome} apresentou prolemas {problemas} vezes.");
-                }
-            }
+            Array.Sort(problemasEquipamentos);
+            Array.Reverse(problemasEquipamentos);
+            VisualizarItens(problemasEquipamentos);
         }
     }
 }
