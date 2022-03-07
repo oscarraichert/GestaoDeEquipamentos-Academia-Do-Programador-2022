@@ -34,6 +34,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         public Equipamento Equipamento;
         public DateTime DataAbertura;
         public Solicitante Solicitante;
+        public bool Aberto;
 
         public Chamado(string titulo, string descricao, Equipamento equipamento, DateTime dataAbertura, Solicitante solicitante)
         {
@@ -42,6 +43,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             Equipamento = equipamento;
             DataAbertura = dataAbertura;
             Solicitante = solicitante;
+            Aberto = true;
         }
 
         public override string ToString()
@@ -90,7 +92,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
         public override string ToString()
         {
-            return $"\nO equipamento {Equipamento} apresentou problemas {Problemas} vezes.";
+            return $"\nO equipamento {Equipamento.Nome} apresentou problemas {Problemas} vezes.";
         }
 
         public int CompareTo(Problema other)
@@ -213,7 +215,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         {
             string opcao = null;
 
-            while (opcao != "7")
+            while (opcao != "9")
             {
                 Console.Clear();
                 Console.WriteLine("\nRegistrar chamado (1)" +
@@ -222,7 +224,9 @@ namespace GestaoDeEquipamentos.ConsoleApp
                     "\nExcluir chamado (4)" +
                     "\nEditar solicitante (5)" +
                     "\nVer histórico de problemas nos equipamentos (6)" +
-                    "\nSair (7)");
+                    "\nFechar um chamado (7)" +
+                    "\nMostrar chamados abertos e fechados (8)" +
+                    "\nSair (9)");
 
                 opcao = Console.ReadLine();
 
@@ -233,7 +237,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
 
                     case "2":
-                        VisualizarItens(chamados);
+                        VisualizarChamados();
                         Console.ReadKey();
                         break;
 
@@ -255,6 +259,14 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
 
                     case "7":
+                        FecharChamado();
+                        break;
+
+                    case "8":
+                        OrganizarChamados();
+                        break;
+
+                    case "9":
                         return;
                         break;
 
@@ -294,7 +306,6 @@ namespace GestaoDeEquipamentos.ConsoleApp
                 int i = Convert.ToInt32(Console.ReadLine());
                 solicitante = solicitantes[i - 1];
             }
-
 
             Chamado novoChamado = new Chamado(titulo, descricao, equipamento, dataAbertura, solicitante);
             chamados[indice] = novoChamado;
@@ -341,6 +352,18 @@ namespace GestaoDeEquipamentos.ConsoleApp
             }
         }
 
+        static void VisualizarChamados()
+        {
+            Console.Clear();
+            for (int i = 0; i < chamados.Length; i++)
+            {
+                if (chamados[i] != null && chamados[i].Aberto == true)
+                {
+                    Console.Write($"\nItem {i + 1}\n{chamados[i]}\n");
+                }
+            }
+        }
+
         static void EditarEquipamento()
         {
             Console.Clear();
@@ -368,7 +391,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         static void EditarChamado()
         {
             Console.Clear();
-            VisualizarItens(chamados);
+            VisualizarChamados();
 
             Console.Write("\nDigite o número do chamado para edita-lo: ");
             int indiceChamado = Convert.ToInt32(Console.ReadLine());
@@ -495,7 +518,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         static void EditarSolicitanteDoChamado(int i, Chamado chamado, Solicitante solicitante)
         {
             Console.WriteLine("Selecione um chamado para editar o solicitante: ");
-            VisualizarItens(chamados);
+            VisualizarChamados();
 
             i = Convert.ToInt32(Console.ReadLine());
             chamado = chamados[i - 1];
@@ -535,6 +558,39 @@ namespace GestaoDeEquipamentos.ConsoleApp
             Array.Sort(problemasEquipamentos);
             Array.Reverse(problemasEquipamentos);
             VisualizarItens(problemasEquipamentos);
+        }
+
+        static void FecharChamado()
+        {
+            VisualizarChamados();
+
+            Console.Write("\nSelecione o chamado que você deseja fechar: ");
+            int i = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            chamados[i].Aberto = false;
+        }
+
+        static void OrganizarChamados()
+        {
+            Console.WriteLine("\nChamados abertos: ");
+            for (int i = 0; i < chamados.Length; i++)
+            {
+                if (chamados[i] != null && chamados[i].Aberto == true)
+                {
+                    Console.Write($"{chamados[i]}\n");
+                }
+            }
+
+            Console.WriteLine("\nChamados fechados: ");
+            for (int i = 0; i < chamados.Length; i++)
+            {
+                if (chamados[i] != null && chamados[i].Aberto == false)
+                {
+                    Console.Write($"{chamados[i]}\n");
+                }
+            }
+
+            Console.ReadKey();
         }
     }
 }
