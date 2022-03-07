@@ -33,13 +33,15 @@ namespace GestaoDeEquipamentos.ConsoleApp
         public string Descricao;
         public Equipamento Equipamento;
         public DateTime DataAbertura;
+        public Solicitante Solicitante;
 
-        public Chamado(string titulo, string descricao, Equipamento equipamento, DateTime dataAbertura)
+        public Chamado(string titulo, string descricao, Equipamento equipamento, DateTime dataAbertura, Solicitante solicitante)
         {
             Titulo = titulo;
             Descricao = descricao;
             Equipamento = equipamento;
             DataAbertura = dataAbertura;
+            Solicitante = solicitante;
         }
 
         public override string ToString()
@@ -47,7 +49,32 @@ namespace GestaoDeEquipamentos.ConsoleApp
             return $"\nTítulo: {Titulo}" +
                         $"\nEquipamento:\n{Equipamento}" +
                         $"\nData de abertura: {DataAbertura}" +
-                        $"\nDias em aberto: {(DateTime.Now - DataAbertura).Days}\n";
+                        $"\nDias em aberto: {(DateTime.Now - DataAbertura).Days}" +
+                        $"\nSolicitante: {Solicitante.Nome} ID: {Solicitante.ID}";
+        }
+    }
+
+    public class Solicitante
+    {
+        public string ID;
+        public string Nome;
+        public string Email;
+        public string Telefone;
+
+        public Solicitante(string iD, string nome, string email, string telefone)
+        {
+            ID = iD;
+            Nome = nome;
+            Email = email;
+            Telefone = telefone;
+        }
+
+        public override string ToString()
+        {
+            return $"ID: {ID}" +
+                $"\nNome: {Nome}" +
+                $"\nE-mail: {Email}" +
+                $"\nTelefone: {Telefone}";
         }
     }
 
@@ -57,6 +84,10 @@ namespace GestaoDeEquipamentos.ConsoleApp
         static Equipamento[] equipamentos = new Equipamento[1000];
         static int numeroChamados = 0;
         static Chamado[] chamados = new Chamado[1000];
+        static Solicitante[] solicitantes = new Solicitante[1000];
+        static Random random = new Random();
+        static int numeroSolicitantes = 0;
+        static int defeitos = 0;
 
         static void Main(string[] args)
         {
@@ -66,20 +97,22 @@ namespace GestaoDeEquipamentos.ConsoleApp
 
         private static void PopularTestes()
         {
+            solicitantes[numeroSolicitantes++] = new Solicitante("4986", "Oscar Raichert", "oscarraichert@hotmail.com", "(49) 999014654");
             equipamentos[numeroEquipamentos++] = new Equipamento("Impressora Dell", "42069", "Dell", "169", new DateTime(2018, 03, 09));
-            chamados[numeroChamados++] = new Chamado("ai ta bugado", "churrascou", equipamentos[0], DateTime.Now.AddDays(-5));
+            chamados[numeroChamados++] = new Chamado("ai ta bugado", "churrascou", equipamentos[0], DateTime.Now.AddDays(-5), solicitantes[0]);
         }
 
         static void MenuPrincipal()
         {
             string opção = null;
 
-            while (opção != "3")
+            while (opção != "4")
             {
                 Console.Clear();
                 Console.WriteLine("\nControle de equipamentos (1)" +
                                 "\nControle de chamadas de manutenção (2)" +
-                                "\nSair (3)");
+                                "\nSolicitantes (3)" +
+                                "\nSair (4)");
                 opção = Console.ReadLine();
 
                 switch (opção)
@@ -93,6 +126,10 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
 
                     case "3":
+                        MenuSolicitantes();
+                        break;
+
+                    case "4":
                         break;
 
                     default:
@@ -151,21 +188,23 @@ namespace GestaoDeEquipamentos.ConsoleApp
         {
             string opcao = null;
 
-            while (opcao != "5")
+            while (opcao != "7")
             {
                 Console.Clear();
                 Console.WriteLine("\nRegistrar chamado (1)" +
                     "\nVisualizar chamados registrados (2)" +
                     "\nEditar chamado (3)" +
                     "\nExcluir chamado (4)" +
-                    "\nSair (5)");
+                    "\nEditar solicitante (5)" +
+                    "\nVer histórico de problemas nos equipamentos (6)" +
+                    "\nSair (7)");
 
                 opcao = Console.ReadLine();
 
                 switch (opcao)
                 {
                     case "1":
-                        RegistrarChamado(numeroChamados++, null);
+                        RegistrarChamado(numeroChamados++, null, null);
                         break;
 
                     case "2":
@@ -182,6 +221,16 @@ namespace GestaoDeEquipamentos.ConsoleApp
                         break;
 
                     case "5":
+                        EditarSolicitanteDoChamado(numeroSolicitantes, chamados[numeroChamados], solicitantes[numeroSolicitantes]);
+                        break;
+
+                    case "6":
+                        EquipamentosProblematicos(equipamentos, chamados);
+                        Console.ReadKey();
+                        break;
+
+                    case "7":
+                        return;
                         break;
 
                     default:
@@ -192,7 +241,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             }
         }
 
-        static void RegistrarChamado(int indice, Equipamento equipamento)
+        static void RegistrarChamado(int indice, Equipamento equipamento, Solicitante solicitante)
         {
             Console.Write("\nTítulo do chamado: ");
             string titulo = Console.ReadLine();
@@ -213,7 +262,16 @@ namespace GestaoDeEquipamentos.ConsoleApp
             DateTime dataAbertura = DateTime.Now;
             Console.WriteLine($"Data de abertura: {dataAbertura}");
 
-            Chamado novoChamado = new Chamado(titulo, descricao, equipamento, dataAbertura);
+            if (solicitante == null)
+            {
+                VisualizarItens(solicitantes);
+                Console.Write("\nDigite qual solicitante você gostaria de vincular ao chamado: ");
+                int i = Convert.ToInt32(Console.ReadLine());
+                solicitante = solicitantes[i - 1];
+            }
+
+
+            Chamado novoChamado = new Chamado(titulo, descricao, equipamento, dataAbertura, solicitante);
             chamados[indice] = novoChamado;
         }
 
@@ -246,7 +304,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
         }
 
         static void VisualizarItens(object[] itens)
-        {            
+        {
             for (int i = 0; i < itens.Length; i++)
             {
                 object item = itens[i];
@@ -266,7 +324,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             Console.Write("\nDigite o número do equipamento para edita-lo: ");
             int eqpEdit = Convert.ToInt32(Console.ReadLine());
 
-            if (equipamentos[eqpEdit-1] != null)
+            if (equipamentos[eqpEdit - 1] != null)
             {
                 foreach (Chamado chamado in chamados)
                 {
@@ -291,7 +349,7 @@ namespace GestaoDeEquipamentos.ConsoleApp
             int indiceChamado = Convert.ToInt32(Console.ReadLine());
             var chamado = chamados[indiceChamado - 1];
 
-            RegistrarChamado(indiceChamado - 1, chamado.Equipamento);
+            RegistrarChamado(indiceChamado - 1, chamado.Equipamento, chamado.Solicitante);
 
         }
 
@@ -316,6 +374,137 @@ namespace GestaoDeEquipamentos.ConsoleApp
             }
 
             itens[i] = null;
+        }
+
+        static void MenuSolicitantes()
+        {
+            Console.Clear();
+            string opcao = null;
+
+            while (opcao != "5")
+            {
+                Console.WriteLine("Registrar solicitante (1)" +
+                    "\nVisualizar solicitantes registrados (2)" +
+                    "\nEditar cadastro (3)" +
+                    "\nExcluir solicitante (4)" +
+                    "\nSair (5)");
+
+                opcao = Console.ReadLine();
+
+                switch (opcao)
+                {
+                    case "1":
+                        Console.Clear();
+                        RegistrarSolicitante(numeroSolicitantes++);
+                        break;
+
+                    case "2":
+                        Console.Clear();
+                        VisualizarItens(solicitantes);
+                        Console.WriteLine();
+                        break;
+
+                    case "3":
+                        EditarSolicitante();
+                        break;
+
+                    case "4":
+                        ExcluirItens(solicitantes);
+                        Console.WriteLine();
+                        break;
+
+                    case "5":
+                        break;
+
+                    default:
+                        Console.WriteLine("Comando inválido!");
+                        break;
+                }
+            }
+        }
+
+        static void RegistrarSolicitante(int cadastro)
+        {
+            string id = $"{random.Next(1000, 9999)}";
+
+            Console.Write("\nNome do solicitante: ");
+            string nome = Console.ReadLine();
+
+            Console.Write("E-mail: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Telefone: ");
+            string telefone = Console.ReadLine();
+
+            Solicitante novoSolicitante = new Solicitante(id, nome, email, telefone);
+            solicitantes[cadastro] = novoSolicitante;
+
+            Console.WriteLine();
+        }
+
+        static void EditarSolicitante()
+        {
+            Console.Clear();
+            VisualizarItens(solicitantes);
+
+            Console.Write("Selecione o item para editar o cadastro: ");
+            int i = Convert.ToInt32(Console.ReadLine());
+
+            string id = $"{solicitantes[i - 1].ID}";
+
+            Console.Write("\nNome do solicitante: ");
+            string nome = Console.ReadLine();
+
+            Console.Write("E-mail: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Telefone: ");
+            string telefone = Console.ReadLine();
+
+            Solicitante novoSolicitante = new Solicitante(id, nome, email, telefone);
+            solicitantes[i - 1] = novoSolicitante;
+
+            Console.WriteLine();
+        }
+
+        static void EditarSolicitanteDoChamado(int i, Chamado chamado, Solicitante solicitante)
+        {
+            Console.WriteLine("Selecione um chamado para editar o solicitante: ");
+            VisualizarItens(chamados);
+
+            i = Convert.ToInt32(Console.ReadLine());
+            chamado = chamados[i - 1];
+
+            Console.WriteLine("Selecione um solicitante para vincular ao chamado: ");
+            VisualizarItens(solicitantes);
+
+            int j = Convert.ToInt32(Console.ReadLine());
+
+            chamados[i - 1] = new Chamado(chamado.Titulo, chamado.Descricao, chamado.Equipamento, chamado.DataAbertura, solicitantes[j - 1]);
+        }
+
+        static void EquipamentosProblematicos(Equipamento[] eqps, Chamado[] cham)
+        {
+            int j = 0;
+            int eqpAtual = 0;
+            int problemas = 0;
+
+            for (j = 0; j < chamados.Length; j++)
+            {
+                if (equipamentos[eqpAtual].Nome == chamados[eqpAtual].Equipamento.Nome && chamados[j] != null)
+                {
+                    problemas++;
+                }
+            }
+
+            while (equipamentos[eqpAtual] != null && chamados[eqpAtual].Equipamento != null)
+            {
+                if (equipamentos[eqpAtual].Nome == chamados[eqpAtual].Equipamento.Nome)
+                {
+                    eqpAtual++;
+                    Console.Write($"\nO equipamento {equipamentos[eqpAtual - 1].Nome} apresentou prolemas {problemas} vezes.");
+                }
+            }
         }
     }
 }
